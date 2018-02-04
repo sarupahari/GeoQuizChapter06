@@ -2,11 +2,15 @@
 
 package edu.wtamu.cis.cidm4385saru.geoquiz;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -18,7 +22,6 @@ public class CheatActivity extends AppCompatActivity {
             "edu.wtamu.cis.cidm4385saru.geoquiz.answer_shown";
 
     private boolean mAnswerIsTrue;
-    private boolean mHasCheated;
 
     private TextView mAnswerTextView;
     private Button mShowAnswerButton;
@@ -42,21 +45,6 @@ public class CheatActivity extends AppCompatActivity {
 
         mAnswerTextView = (TextView) findViewById(R.id.answer_text_view);
 
-        mHasCheated = false;
-        if (savedInstanceState != null) {
-            mHasCheated = savedInstanceState.getBoolean(EXTRA_ANSWER_SHOWN, false);
-            setAnswerShownResult(mHasCheated);
-
-            if (mAnswerIsTrue) {
-                mAnswerTextView.setText(R.string.true_button);
-            }
-            else {
-                mAnswerTextView.setText(R.string.false_button);
-            }
-        } else {
-            setAnswerShownResult(false);
-        }
-
         mShowAnswerButton = (Button) findViewById(R.id.show_answer_button);
         mShowAnswerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -67,14 +55,26 @@ public class CheatActivity extends AppCompatActivity {
                     mAnswerTextView.setText(R.string.false_button);
                 }
                 setAnswerShownResult(true);
-                mHasCheated = true;
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    int cx = mShowAnswerButton.getWidth() / 2;
+                    int cy = mShowAnswerButton.getHeight() / 2;
+                    float radius = mShowAnswerButton.getWidth();
+                    Animator anim = ViewAnimationUtils
+                            .createCircularReveal(mShowAnswerButton, cx, cy, radius, 0);
+                    anim.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            mShowAnswerButton.setVisibility(View.INVISIBLE);
+                        }
+                    });
+                    anim.start();
+                } else {
+                    mShowAnswerButton.setVisibility(View.INVISIBLE);
+                }
             }
         });
-    }
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        super.onSaveInstanceState(savedInstanceState);
-        savedInstanceState.putBoolean(EXTRA_ANSWER_SHOWN, mHasCheated);
     }
 
     private void setAnswerShownResult(boolean isAnswerShown) {
@@ -83,6 +83,7 @@ public class CheatActivity extends AppCompatActivity {
         setResult(RESULT_OK, data);
     }
 }
+
 
 
 

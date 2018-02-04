@@ -23,6 +23,9 @@ public class QuizActivity extends AppCompatActivity {
     private Button mCheatButton;
     private TextView mQuestionTextView;
 
+    private TextView mTokensTextView;
+    private int mTokens = 3;
+
     private Question[] mQuestionBank = new Question[] {
             new Question(R.string.question_australia, true),
             new Question(R.string.question_oceans, true),
@@ -46,6 +49,7 @@ public class QuizActivity extends AppCompatActivity {
         }
 
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
+        mTokensTextView = (TextView) findViewById(R.id.tokens_text_view);
 
         mTrueButton = (Button) findViewById(R.id.true_button);
         mTrueButton.setOnClickListener(new View.OnClickListener() {
@@ -73,13 +77,18 @@ public class QuizActivity extends AppCompatActivity {
             }
         });
 
+
         mCheatButton = (Button) findViewById(R.id.cheat_button);
         mCheatButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
-                Intent intent = CheatActivity.newIntent(QuizActivity.this, answerIsTrue);
-                startActivityForResult(intent, REQUEST_CODE_CHEAT);
+                if (mTokens > 0) {
+                    boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+                    Intent intent = CheatActivity.newIntent(QuizActivity.this, answerIsTrue);
+                    startActivityForResult(intent, REQUEST_CODE_CHEAT);
+                } else {
+                    mCheatButton.setEnabled(false);
+                }
             }
         });
 
@@ -97,6 +106,8 @@ public class QuizActivity extends AppCompatActivity {
                 return;
             }
             mIsCheater = CheatActivity.wasAnswerShown(data);
+            mTokens--;
+            mTokensTextView.setText(mTokens + " tokens left");
         }
     }
 
@@ -161,3 +172,4 @@ public class QuizActivity extends AppCompatActivity {
                 .show();
     }
 }
+
